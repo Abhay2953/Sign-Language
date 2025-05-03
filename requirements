@@ -1,0 +1,28 @@
+Software Requirements
+  Python- 3.8.0
+  Libraries- 
+    Mediapipe version: 0.10.10
+    OpenCV
+    NumPy
+    Pickle 
+    Scikit-learn 
+
+
+Hardware Requirements
+  Webcam
+
+
+
+Dataset Requirements
+  Images of Hand Gestures-
+   * Stored in a structured directory (Data).
+   * Multiple subfolders for different hand signs (e.g., A-Z, Backspace).
+   * Consistent image resolution for better model accuracy.
+
+
+
+Project Structure
+ * Data Collection: collectData.py
+ * Creation of Dataset: createDataSet.py
+ * Model Training: trainModel.py
+ * Evaluation: runModel.py
