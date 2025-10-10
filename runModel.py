@@ -1,9 +1,11 @@
+
 """ 
 pickle- use to load the pre-tained ML model
 cv2- use to capture video, images
 mediapipe- provide prebuild ML solutions
 numpy- use to perform numerical operation
 time- use for measure intervals or adding delays 
+ptyysx- use for convert text into the voice
 
 """
 
@@ -12,6 +14,15 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
+import pyttsx3
+
+# voice assistance
+def speakTheWord(text):
+    engine=pyttsx3.init()
+    engine.say(text)
+    engine.runAndWait()
+    engine.stop()
+
 
 # string and formating parameters
 def wrap_text(text, max_width, font, font_scale, thickness):
@@ -61,18 +72,29 @@ labels_dict = { 'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F': 'F', 'G':
 current_word = []   
 
 # To store the full sentence
-sentence = []       
+sentence = []  
+
+# To store the current word that is going to speak voice 
+final_word=[]     
+sen=[]
+
+# To store the staus of voice assistance i.e enable or disable for word and sencence
+word_status = "TRUE"
+sentence_status = "TRUE"
 
 
  # Stores the current letter detected as candidate.
 candidate_letter = None   
+
  # Timestamp when the candidate letter was first recognized 
 candidate_start_time = None 
+
 # Duration (in seconds) for confirming a stable letter
 stability_threshold = 1.5   
 
 # Timer for current word when no hand is detected
 last_hand_detection_time = time.time()
+
 # Timeout for finalizing the word if the hand disappears
 no_hand_timeout = 0.8  
 
@@ -162,13 +184,29 @@ while True:
 
         # clear current word if "backspace" is detected
         if letter_from_frame == "backspace":
-             # Clear only the current word
+        #      # Clear only the current word
+
+        #     if sentence_status == "TRUE":
+        #        speakTheWord(sen)
+
             current_word = [] 
-            
             candidate_letter = None
             candidate_start_time = None
             # Skip the rest of the frame processing
-            continue  
+            continue 
+        
+        # if letter_from_frame==".":
+        #     if sentence_status == "TRUE":
+        #        speakTheWord(sen)    
+        
+        
+        
+        
+        # Run the voice assistance that say the sentence after the fullstop detected
+        # if letter_from_frame == "fullstop":
+        #     if(sentence_status == "TRUE"):
+        #         speakTheWord(sentence)
+        #         sentence = [] 
 
         if letter_from_frame != "?":
             if candidate_letter != letter_from_frame:
@@ -181,16 +219,24 @@ while True:
                     candidate_start_time = None
 
     else:
-        # Ffnalize the word when no hand is detected
+        # Finalize the word when no hand is detected
         if (current_time - last_hand_detection_time > no_hand_timeout) and current_word:
             sentence.append("".join(current_word))
+            
+            if(word_status=="TRUE"):
+                final_word.append("".join(current_word))
+                speakTheWord(final_word)
+                final_word = []
+                
             current_word = []
             candidate_letter = None
             candidate_start_time = None
-
+    
+    
     # constructs strings that represent the detected letter, the current in-progress word, and the full sentence made of finalized words
     detected_word_text = "Detected Word: " + (letter_from_frame if letter_from_frame else "")
     word_text = "Word: " + "".join(current_word)
+    sen="".join(sentence)
     combined_sentence = "Sentence: " + " ".join(sentence)
 
     # call function wrap_text to break the sentence into multiple lines so that it fits within the frame
@@ -216,7 +262,7 @@ while True:
     
     # display "Word"
     cv2.putText(frame, word_text, (10, y_start), font, font_scale, (255, 255, 0), thickness, cv2.LINE_AA)
-
+   
     # Display the wrapped sentence
     y_start += 40
     for line in wrapped_sentence_lines:
@@ -228,15 +274,29 @@ while True:
 
     # press "q" to quit
     key = cv2.waitKey(25) & 0xFF
-    if key == ord('q'):
+    if key == ord('q') or key == ord('Q'):
         print("Exiting program due to 'q' key press.")
         break
 
     # press "c" to clear sentence
-    if key == ord('c'):
+    if key == ord('c') or key == ord('C'):
         print("Clearing sentence with 'c' key!")
         # Clear only the sentence
         sentence = []
+
+
+    if key == ord('w') or key == ord('W'):
+        if(word_status == "TRUE"):
+            word_status="FALSE"
+        else:
+            word_status="TRUE"   
+            
+            
+    if key == ord('s') or key == ord('S'):
+        if(sentence_status == "TRUE"):
+            sentence_status="FALSE"
+        else:
+            sentence_status="TRUE" 
 
 # Release resources
 
